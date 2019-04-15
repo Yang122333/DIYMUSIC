@@ -408,6 +408,7 @@ SoundModel soundModel = new SoundModel(getContext());
             }
         } else {
             isBselect = true;
+            isBselect = true;
             //播放黑色按键音乐
             soundModel.play(KEY_BLACK, index%10);
             //保存黑色按键位置
