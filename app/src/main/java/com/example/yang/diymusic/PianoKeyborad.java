@@ -1,6 +1,8 @@
 package com.example.yang.diymusic;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -33,6 +35,7 @@ public class PianoKeyborad extends View {
     //默认的颜色和按下的颜色(白色按下、黑色按下)
     private Paint mWhiteKeyPaint, mWhiteKeyHitPaint,
             mBlackKeyPaint, mBlackKeyHitPaint;
+    private Bitmap whiteBg, whitePressBg, blackBg, blackPressBg;
     //设置音符的按键
     private Paint mCKeyPaint, mCSharpKeyPaint, mDKeyPaint,
             mDSharpKeyPaint, mEKeyPaint, mFKeyPaint,
@@ -44,7 +47,6 @@ public class PianoKeyborad extends View {
             mFSharpKey = new Rect(), mGKey = new Rect(),
             mGSharpKey = new Rect(), mAKey = new Rect(),
             mASharpKey = new Rect(), mBKey = new Rect();
-
 
     private MotionEvent.PointerCoords mPointerCoords;
 
@@ -90,6 +92,10 @@ public class PianoKeyborad extends View {
         mAKeyPaint = mWhiteKeyPaint;
         mBKeyPaint = mWhiteKeyPaint;
 
+        whiteBg = BitmapFactory.decodeResource(getResources(), R.drawable.white_up);
+        whitePressBg = BitmapFactory.decodeResource(getResources(), R.drawable.white_down);
+        blackBg = BitmapFactory.decodeResource(getResources(), R.drawable.black_up);
+        blackPressBg = BitmapFactory.decodeResource(getResources(), R.drawable.black_down);
         mWhiteKeyHitPaint = new Paint(mWhiteKeyPaint);
         mWhiteKeyHitPaint.setColor(Color.LTGRAY);
         mWhiteKeyHitPaint.setStyle(Paint.Style.FILL_AND_STROKE);
@@ -109,8 +115,6 @@ public class PianoKeyborad extends View {
     }
 
 
-
-
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
@@ -123,7 +127,7 @@ public class PianoKeyborad extends View {
         int blackKeyWidth = (int) (whiteKeyWidth * BLACK_TO_WHITE_WIDTH_RATIO);
         int blackKeyHeight = (int) (height * BLACK_TO_WHITE_HEIGHT_RATIO);
         Button btn = new Button(getContext());
-        btn.setOnClickListener(v ->doSomeThings());
+        btn.setOnClickListener(v -> doSomeThings());
         mCKey.set(0 * whiteKeyWidth, 0, 1 * whiteKeyWidth, height);
         mDKey.set(1 * whiteKeyWidth, 0, 2 * whiteKeyWidth, height);
         mEKey.set(2 * whiteKeyWidth, 0, 3 * whiteKeyWidth, height);
@@ -131,6 +135,7 @@ public class PianoKeyborad extends View {
         mGKey.set(4 * whiteKeyWidth, 0, 5 * whiteKeyWidth, height);
         mAKey.set(5 * whiteKeyWidth, 0, 6 * whiteKeyWidth, height);
         mBKey.set(6 * whiteKeyWidth, 0, 7 * whiteKeyWidth, height);
+
 
         mCSharpKey.set(1 * whiteKeyWidth - (blackKeyWidth / 2), 0,
                 1 * whiteKeyWidth + (blackKeyWidth / 2), blackKeyHeight);
@@ -148,57 +153,71 @@ public class PianoKeyborad extends View {
     private void doSomeThings() {
     }
 
+
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         //绘制白色按键
-        canvas.drawRect(mCKey, mCKeyPaint);
-        canvas.drawRect(mDKey, mDKeyPaint);
-        canvas.drawRect(mEKey, mEKeyPaint);
-        canvas.drawRect(mFKey, mFKeyPaint);
-        canvas.drawRect(mGKey, mGKeyPaint);
-        canvas.drawRect(mAKey, mAKeyPaint);
-        canvas.drawRect(mBKey, mBKeyPaint);
+        canvas.drawBitmap(whiteBg, null, mCKey, null);
+        canvas.drawBitmap(whiteBg, null, mDKey, null);
+        canvas.drawBitmap(whiteBg, null, mEKey, null);
+        canvas.drawBitmap(whiteBg, null, mFKey, null);
+        canvas.drawBitmap(whiteBg, null, mGKey, null);
+        canvas.drawBitmap(whiteBg, null, mAKey, null);
+        canvas.drawBitmap(whiteBg, null, mBKey, null);
+//        canvas.drawRect(mCKey, mCKeyPaint);
+//        canvas.drawRect(mDKey, mDKeyPaint);
+//        canvas.drawRect(mEKey, mEKeyPaint);
+//        canvas.drawRect(mFKey, mFKeyPaint);
+//        canvas.drawRect(mGKey, mGKeyPaint);
+//        canvas.drawRect(mAKey, mAKeyPaint);
+//        canvas.drawRect(mBKey, mBKeyPaint);
 
         //绘制黑色按键，这里黑色按键会在白色按键上面
-        canvas.drawRect(mCSharpKey, mCSharpKeyPaint);
-        canvas.drawRect(mDSharpKey, mDSharpKeyPaint);
-        canvas.drawRect(mFSharpKey, mFSharpKeyPaint);
-        canvas.drawRect(mGSharpKey, mGSharpKeyPaint);
-        canvas.drawRect(mASharpKey, mASharpKeyPaint);
+        canvas.drawBitmap(blackBg, null, mCSharpKey, null);
+        canvas.drawBitmap(blackBg, null, mDSharpKey, null);
+        canvas.drawBitmap(blackBg, null, mFSharpKey, null);
+        canvas.drawBitmap(blackBg, null, mGSharpKey, null);
+        canvas.drawBitmap(blackBg, null, mASharpKey, null);
+
+//        canvas.drawRect(mCSharpKey, mCSharpKeyPaint);
+//        canvas.drawRect(mDSharpKey, mDSharpKeyPaint);
+//        canvas.drawRect(mFSharpKey, mFSharpKeyPaint);
+//        canvas.drawRect(mGSharpKey, mGSharpKeyPaint);
+//        canvas.drawRect(mASharpKey, mASharpKeyPaint);
     }
 
 
-
-//    @Override
-//    public boolean onTouchEvent(MotionEvent eventent) {
-//        //记录用了多少个手指头来点击屏幕
-//        int pointerCount = event.getPointerCount();
-//        //有多个手指头点击屏幕，在此判断。
-//        //如果当前手指数量大于设置的最大数量
-//        int cappedPointerCount = pointerCount > MAX_FINGERS ? MAX_FINGERS : pointerCount;
-//        int actionIndex = event.getActionIndex();
-//        int action = event.getActionMasked();
-//        int id = event.getPointerId(actionIndex);
-//        //检查是否收到了手指的按下或者抬起的动作
-//        if ((action == MotionEvent.ACTION_DOWN ||
-//                action == MotionEvent.ACTION_POINTER_DOWN)
-//                && id < MAX_FINGERS) {
-//            mFingerPoints[id] = new Point((int) event.getX(actionIndex),
-//                    (int) event.getY(actionIndex));
-//        } else if ((action == MotionEvent.ACTION_POINTER_UP ||
-//                action == MotionEvent.ACTION_UP)
-//                && id < MAX_FINGERS) {
-//            mFingerPoints[id] = null;
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        //记录用了多少个手指头来点击屏幕
+        int pointerCount = event.getPointerCount();
+        //有多个手指头点击屏幕，在此判断。
+        //如果当前手指数量大于设置的最大数量
+        int cappedPointerCount = pointerCount > MAX_FINGERS ? MAX_FINGERS : pointerCount;
+        int actionIndex = event.getActionIndex();
+        int action = event.getActionMasked();
+        int id = event.getPointerId(actionIndex);
+        //检查是否收到了手指的按下或者抬起的动作
+        if ((action == MotionEvent.ACTION_DOWN ||
+                action == MotionEvent.ACTION_POINTER_DOWN)
+                && id < MAX_FINGERS) {
+            mFingerPoints[id] = new Point((int) event.getX(actionIndex),
+                    (int) event.getY(actionIndex));
+        } else if ((action == MotionEvent.ACTION_POINTER_UP ||
+                action == MotionEvent.ACTION_UP)
+                && id < MAX_FINGERS) {
+            mFingerPoints[id] = null;
 //            invalidateKey(mFingerTones[id]);
-//            mFingerTones[id] = -1;
-//
-//        }
-//        for (int i = 0; i < cappedPointerCount; i++) {
-//            int index = event.findPointerIndex(i);
-//            if (mFingerPoints[i] != null && index != -1) {
-//                mFingerPoints[i].set((int) event.getX(index),
-//                        (int) event.getY(index));
+            mFingerTones[id] = -1;
+
+        }
+        for (int i = 0; i < cappedPointerCount; i++) {
+            int index = event.findPointerIndex(i);
+            if (mFingerPoints[i] != null && index != -1) {
+                mFingerPoints[i].set((int) event.getX(index),
+                        (int) event.getY(index));
 //                int tone = getToneForPoint(mFingerPoints[i]);
 //                if (tone != mFingerTones[i] && tone != -1) {
 //                    invalidateKey(mFingerTones[i]);
@@ -207,14 +226,13 @@ public class PianoKeyborad extends View {
 //                    if (!isKeyDown(i)) {
 //                        event.getPointerCoords(index, mPointerCoords);
 //                        Toast.makeText(mContext, "***" + mFingerTones[i], Toast.LENGTH_SHORT).show();
-//
 //                    }
 //                }
-//            }
-//        }
+            }
+        }
 //        updatePaints();
-//        return true;
-//    }
+        return true;
+    }
 
 }
 

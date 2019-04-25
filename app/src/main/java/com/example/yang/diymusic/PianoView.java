@@ -121,13 +121,13 @@ public class PianoView extends View implements PlayQueueCallBack {
 
     private void setupView(Context context) {
         mWhiteDrawable = context.getResources()
-                .getDrawable(R.drawable.white_bg);
+                .getDrawable(R.drawable.white_up);
         mBlackDrawable = context.getResources()
-                .getDrawable(R.drawable.black_bg);
+                .getDrawable(R.drawable.black_up);
         wSelectDrawable = context.getResources().getDrawable(
-                R.drawable.white_bg_pressed);
+                R.drawable.white_down);
         bSelectDrawable = context.getResources().getDrawable(
-                R.drawable.black_bg_pressed);
+                R.drawable.black_down);
         pf = new PreferenceService(context);
         mWhiteNum = pf.getKeyNumber();
         p = new Paint(Paint.ANTI_ALIAS_FLAG);
