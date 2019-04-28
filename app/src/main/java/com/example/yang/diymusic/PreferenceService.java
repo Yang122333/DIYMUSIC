@@ -1,21 +1,39 @@
 package com.example.yang.diymusic;
 
-import android.content.Context;
-
-class PreferenceService {
-    public PreferenceService(Context context) {
-
+public class PreferenceService {
+    public static final String DO = "Do";
+    public static final String D4 = "D4";
+    private String mTone ;
+    private int mMode;
+    private int mKeyNumber;
+    public PreferenceService() {
+        mKeyNumber = 8;
+        mTone = DO;
+        mMode = 1;
     }
-
+    public void setKeyNumber(int keyNumber){
+        mKeyNumber = keyNumber;
+    }
     public int getKeyNumber() {
-    return 8;
+    return mKeyNumber;
     }
-
-    public int getmode() {
-        return 2;
+    public void setMode(int mode){
+        mMode = mode;
     }
-
+    public int getMode() {
+        return mMode;
+    }
+    public void setTone(String tone){
+        if(tone == null)
+            return;
+        if(tone.equals(DO)){
+            mTone = DO;
+        }
+        if(tone.equals(D4)){
+            mTone = D4;
+        }
+    }
     public String getTone() {
-        return "123";
+        return mTone;
     }
 }

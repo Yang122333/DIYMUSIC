@@ -35,7 +35,7 @@ public class PianoView extends View implements PlayQueueCallBack {
     /**
      * 移动进度
      */
-    private float mProgress = 0.5f;
+    private double mProgress = 0.5f;
     /**
      * mWhiteRect 白色键的矩形
      * mBlackRect 黑色键的矩形
@@ -128,7 +128,7 @@ public class PianoView extends View implements PlayQueueCallBack {
                 R.drawable.white_down);
         bSelectDrawable = context.getResources().getDrawable(
                 R.drawable.black_down);
-        pf = new PreferenceService(context);
+        pf = new PreferenceService();
         mWhiteNum = pf.getKeyNumber();
         p = new Paint(Paint.ANTI_ALIAS_FLAG);
         p.setColor(Color.RED);
@@ -143,14 +143,16 @@ public class PianoView extends View implements PlayQueueCallBack {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+        mWhiteNum = pf.getKeyNumber();
         mSurfaceWidth = w - 2;
+        Log.i("yang", ""+(getWidth() - mSurfaceWidth - 2));
         if (mWhiteNum == 9 || mWhiteNum > 10 && mWhiteNum < 14) {
             mSurfaceWidth = w - mWhiteNum;
         }
         mWhiteRect = new Rect(0, 0, w / mWhiteNum, h);
         mBlackRect = new Rect(0, 0, w / mWhiteNum * 2 / 3, h * 3 / 5);
         //两排按键标签位置
-        if (pf.getmode() == 2) {
+        if (pf.getMode() == 2) {
             oval = new RectF(0, h * 3 / 5 + mWhiteNum + 8, w / mWhiteNum / 2,
                     h * 4 / 5 + 10);
         } else {
@@ -186,7 +188,7 @@ public class PianoView extends View implements PlayQueueCallBack {
             //只画屏幕中显示的按键
             if (mBlackRect.left > mSurfaceWidth) {
                 break;
-            } else if (mBlackRect.right >= 0) {
+            } else if (mBlackRect.right > 0) {
                 mBlackDrawable.setBounds(mBlackRect);
                 mBlackDrawable.draw(canvas);
                 //播放录音按键显示效果
@@ -278,8 +280,9 @@ public class PianoView extends View implements PlayQueueCallBack {
         }
         return (int) (maxW * mProgress * (-1));
     }
+
     //设置滑动的值
-    public void setProgress(float progress) {
+    public void setProgress(double progress) {
         mProgress = progress;
         invalidate();
     }
@@ -297,7 +300,7 @@ public class PianoView extends View implements PlayQueueCallBack {
         }
         mWhiteRect = new Rect(0, 0, w / mWhiteNum, h);
         mBlackRect = new Rect(0, 0, w / mWhiteNum * 2 / 3, h * 3 / 5);
-        if (pf.getmode() == 2) {
+        if (pf.getMode() == 2) {
             oval = new RectF(0, h * 3 / 5 + mWhiteNum + 8, w / mWhiteNum / 2,
                     h * 4 / 5 + 10);
         } else {
@@ -457,6 +460,10 @@ SoundModel soundModel = new SoundModel(getContext());
     public void Recover() {
         wIndex = -1;
         bIndex = -1;
+        invalidate();
+    }
+    public void setPf(PreferenceService pf){
+        this.pf = pf;
         invalidate();
     }
     //播放录音接口

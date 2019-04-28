@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ImageView
+            android:src="@drawable/left_arrow_0"
+            android:layout_width="@dimen/arrow_size"
+            android:layout_height="@dimen/arrow_size" />
+        <ImageView
+            android:src="@drawable/l_arrow_0"
+            android:layout_width="@dimen/arrow_size"
+            android:layout_height="@dimen/arrow_size" />
+        <SeekBar
+            android:id="@+id/overview"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:splitTrack="false"
+            android:progressDrawable="@drawable/seekbar_bg"
+            android:thumb="@drawable/seekbar_thumb"/>
+        <ImageView
+            android:src="@drawable/r_arrow_0"
+            android:scaleType="fitXY"
+            android:layout_width="@dimen/arrow_size"
+            android:layout_height="@dimen/arrow_size" />
+        <ImageView
+            android:src="@drawable/right_arrow_0"
+            android:layout_width="@dimen/arrow_size"
+            android:layout_height="@dimen/arrow_size" />
+    </LinearLayout>
+    <com.example.yang.diymusic.PianoView
+        android:id="@+id/piano_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>
