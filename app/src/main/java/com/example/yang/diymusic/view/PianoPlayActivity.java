@@ -19,6 +19,7 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter<PianoUI>, Pia
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         init();
+        getApplication().getResources();
         }
 
     private void init(){
@@ -28,8 +29,10 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter<PianoUI>, Pia
         Log.i("width",  seekBar.getThumb().getMinimumWidth()+"");
         seekBar.setProgress(PianoPresenter.START);
         PreferenceService pf = new PreferenceService();
-        pf.setKeyNumber(20);
+        pf.setKeyNumber(8);
         pf.setMode(2);
+
+
         pf.setTone(PreferenceService.D4);
         mPianoView.setPf(pf);
     }
