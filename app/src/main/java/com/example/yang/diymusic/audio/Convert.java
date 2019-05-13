@@ -12,17 +12,17 @@ public class Convert {
     /**
      * PCM文件转WAV文件
      *
-     * @param inPcmFilePath  输入PCM文件路径
-     * @param outWavFilePath 输出WAV文件路径
+     * @param audio  输入PCM文件信息
      */
-    public static void convertPcm2Wav(String inPcmFilePath, String outWavFilePath, Audio audio) {
-
-        FileInputStream in = null;
-        FileOutputStream out = null;
+    public static void convertPcm2Wav(Audio audio) {
         byte[] data = new byte[1024];
         int sampleRate = audio.getSampleRate();
         int channels = audio.getChannel();
         int bitNum = audio.getBitNum();
+        String  inPcmFilePath = audio.getPcmPath();
+        String outWavFilePath = audio.getWavPath();
+        FileInputStream in = null;
+        FileOutputStream out = null;
         try {
             //采样字节byte率
             long byteRate = sampleRate * channels * bitNum / 8;

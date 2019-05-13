@@ -1,4 +1,4 @@
-package com.example.yang.diymusic.presenter.ui;
+package com.example.yang.diymusic.view.ui;
 
 public interface BaseUI {
     public void show();

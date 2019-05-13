@@ -3,6 +3,7 @@ package com.example.yang.diymusic;
 public class PreferenceService {
     public static final String DO = "Do";
     public static final String D4 = "D4";
+    public static final String BLANK = "bLank";
     private String mTone ;
     private int mMode;
     private int mKeyNumber;

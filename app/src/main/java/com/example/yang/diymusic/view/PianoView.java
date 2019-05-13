@@ -1,4 +1,4 @@
-package com.example.yang.diymusic;
+package com.example.yang.diymusic.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -15,7 +15,13 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class PianoView extends View implements PlayQueueCallBack {
+import com.example.yang.diymusic.LogUtil;
+import com.example.yang.diymusic.PreferenceService;
+import com.example.yang.diymusic.R;
+import com.example.yang.diymusic.model.RecodeModel;
+import com.example.yang.diymusic.model.SoundModel;
+
+public class PianoView extends View {
     /**
      * 白键的数量
      */
@@ -114,6 +120,11 @@ public class PianoView extends View implements PlayQueueCallBack {
      */
     private int bIndex = -1;
 
+    public void setRecord(boolean recorde) {
+        isRecorde = recorde;
+    }
+
+    private boolean isRecorde = false;
     public PianoView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setupView(context);
@@ -335,7 +346,6 @@ public class PianoView extends View implements PlayQueueCallBack {
                 if (isMove) {
                     list[0] = new PointF(touch_x, touch_y);
                 }
-
                 keyOnclick(touch_x, touch_y);
                 break;
             case MotionEvent.ACTION_POINTER_DOWN: // 第二个手指按下事件
@@ -391,7 +401,7 @@ public class PianoView extends View implements PlayQueueCallBack {
 
         return true;
     }
-SoundModel soundModel = new SoundModel(getContext());
+SoundModel soundModel = SoundModel.getInstance(getContext());
     // 手指滑动点击事件
     private void keyOnclick(int x, int y) {
         //获取黑色点击按键的位置
@@ -402,9 +412,12 @@ SoundModel soundModel = new SoundModel(getContext());
             if (index >= 0) {
                 isWselect = true;
                 //播放白色按键音乐
-                soundModel.play(KEY_WHITE, index%10);
+                soundModel.play(KEY_WHITE, index);
                 //保存白色按键位置
-                RecodeModel.getInstance().addEvent(KEY_WHITE, index);
+                if(isRecorde){
+                    RecodeModel.getInstance().addEvent(KEY_WHITE, index);
+                }
+                LogUtil.i("白色"+index);
                 invalidate();
             } else {
                 return;
@@ -413,9 +426,12 @@ SoundModel soundModel = new SoundModel(getContext());
             isBselect = true;
             isBselect = true;
             //播放黑色按键音乐
-            soundModel.play(KEY_BLACK, index%10);
+            soundModel.play(KEY_BLACK, index);
             //保存黑色按键位置
-            RecodeModel.getInstance().addEvent(KEY_BLACK, index);
+            if(isRecorde){
+                RecodeModel.getInstance().addEvent(KEY_BLACK, index);
+            }
+            LogUtil.i("黑色"+index);
             invalidate();
         }
     }
@@ -464,18 +480,6 @@ SoundModel soundModel = new SoundModel(getContext());
     }
     public void setPf(PreferenceService pf){
         this.pf = pf;
-        invalidate();
-    }
-    //播放录音接口
-    @Override
-    public void callback(int type, int position) {
-        if (type == KEY_WHITE) {
-            wIndex = position;
-            bIndex = -1;
-        } else {
-            wIndex = -1;
-            bIndex = position;
-        }
         invalidate();
     }
 }

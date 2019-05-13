@@ -11,21 +11,20 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 public class FileUtil {
-    public static final int CACHE_SIZE = 1024 * 4;
+    static final int CACHE_SIZE = 1024 * 4;
 
     /**
-     * @param context
-     * @param resId
-     * @param filePath
+     * @param context  环境
+     * @param resId  资源文件
+     * @param filePath 文件路径
      * @return 是否复制成功
      */
-    public static boolean writeToFileFromRaw(Context context, int resId, String filePath) {
-        File file = new File(filePath);
-        if (file.exists()) {
-            LogUtil.i("文件已存在");
-            return false;
+    public static void writeToFileFromRaw(Context context, int resId, String filePath) {
+        if (checkFileExist(new File(filePath))) {
+            return;
         }
         InputStream input = context.getResources().openRawResource(resId);
         BufferedInputStream bis = new BufferedInputStream(input);
@@ -44,26 +43,27 @@ public class FileUtil {
             LogUtil.e("文件读取失败");
             e.printStackTrace();
         }
-        return true;
     }
 
     /**
-     * @param path
+     * @param audio 音频具体信息
      * @return
      */
-    public static boolean writeEmptyAudio(String path, Audio audio) {
-        long time1 = System.currentTimeMillis();
-        File file = new File(path);
-        if (file.exists()) {
-            LogUtil.i("文件已存在");
+    public static boolean writeEmptyAudio(Audio audio) {
+        int sampleRate = audio.getSampleRate();
+        int channels = audio.getChannel();
+        int bitNum = audio.getBitNum();
+        String path = audio.getPcmPath();
+        if (checkFileExist(new File(path))) {
             return false;
         }
+        long duration = audio.getDuration();
         FileOutputStream fos = null;
         BufferedOutputStream bos = null;
         byte[] buffer = new byte[CACHE_SIZE]; //缓冲
         //字节长度 = time(s)*sampleRate* channelCount *bitNum/8(位)
-        long totalDataLen = audio.getDuration() / 1000 * audio.getSampleRate() *
-                audio.getChannel() * audio.getBitNum() / 8;
+        long totalDataLen = duration / 1000 * sampleRate *
+                channels * bitNum / 8;
         try {
             fos = new FileOutputStream(path);
             bos = new BufferedOutputStream(fos);
@@ -83,9 +83,6 @@ public class FileUtil {
                     break;
                 }
             }
-//            for (int i = 0; i < totalDataLen; i+= CACHE_SIZE) {
-//                bos.write(buffer,0,CACHE_SIZE);
-//            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -105,17 +102,44 @@ public class FileUtil {
                 e.printStackTrace();
             }
         }
-        long time2 = System.currentTimeMillis();
-        LogUtil.i(time2-time1+"");
         return true;
     }
 
-    public static boolean checkFileExist(String path) {
-        File file = new File(path);
+    public static boolean checkFileExist(File file) {
         if (file.exists()) {
+            LogUtil.i("文件已存在");
             return true;
         }
         return false;
     }
 
+    // 判断文件夹是否存在，不存在则创建
+    public static boolean judeAndCreateDirExists(File file) {
+        if (file.exists()) {
+            if (file.isDirectory()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            file.mkdir();
+            return false;
+        }
+    }
+    public static ArrayList<String> showFileList(File file){
+        if(file == null){
+            return null;
+        }
+        if(file.isDirectory()){
+            File[] filesArray = file.listFiles();
+            if(filesArray != null){
+                ArrayList mLists = new ArrayList();
+                for (File aFilesArray : filesArray) {
+                    mLists.add(aFilesArray.getName());
+                }
+                return mLists;
+            }
+        }
+        return null;
+    }
 }

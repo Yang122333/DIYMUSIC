@@ -3,8 +3,6 @@ package com.example.yang.diymusic.audio;
 import android.media.AudioFormat;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,12 +11,12 @@ import java.io.FileInputStream;
  * 音频信息
  */
 public class Audio {
-    public String getPath() {
-        return path;
+    public String getPcmPath() {
+        return pcmPath;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setPcmPath(String path) {
+        this.pcmPath = path;
     }
 
     public String getName() {
@@ -61,26 +59,34 @@ public class Audio {
         this.bitNum = bitNum;
     }
 
-    public int getDuration() {
+    public long getDuration() {
         return duration;
     }
 
-    public void setDuration(int duration) {
+    public void setDuration(long duration) {
         this.duration = duration;
     }
 
-    private String path;
+    private String pcmPath;
+
+    public String getWavPath() {
+        return wavPath;
+    }
+
+    public void setWavPath(String armPath) {
+        this.wavPath = armPath;
+    }
+
+    private String wavPath;
     private String name;
     private float volume = 1f;
     private int channel = 2;
     private int sampleRate = 44100;
     private int bitNum = 16;
-    private int duration;
+    private long duration;
 
-
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     public static Audio createAudioFromFile(File inputFile) throws Exception {
-        if(!inputFile.exists())
+        if (!inputFile.exists())
             return null;
         MediaExtractor extractor = new MediaExtractor();
         MediaFormat format = null;
@@ -104,15 +110,14 @@ public class Audio {
         if (i == numTracks) {
             throw new Exception("No audio track found in " + inputFile);
         }
-
         Audio audio = new Audio();
         audio.name = inputFile.getName();
-        audio.path = inputFile.getAbsolutePath();
+        audio.wavPath = inputFile.getAbsolutePath();
         audio.sampleRate = format.containsKey(MediaFormat.KEY_SAMPLE_RATE) ?
                 format.getInteger(MediaFormat.KEY_SAMPLE_RATE) : 44100;
         audio.channel = format.containsKey(MediaFormat.KEY_CHANNEL_COUNT) ?
                 format.getInteger(MediaFormat.KEY_CHANNEL_COUNT) : 1;
-        audio.duration = (int) ((format.getLong(MediaFormat.KEY_DURATION) / 1000.f));
+        audio.duration = (long) ((format.getLong(MediaFormat.KEY_DURATION) / 1000.f));
 
         //根据pcmEncoding编码格式，得到采样精度，MediaFormat.KEY_PCM_ENCODING这个值不一定有
         int pcmEncoding = format.containsKey(MediaFormat.KEY_PCM_ENCODING) ?
@@ -137,7 +142,7 @@ public class Audio {
 
     @Override
     public String toString() {
-        return "path:" + path +
+        return "path:" + wavPath +
                 "\n name:" + name +
                 "\n channel:" + channel +
                 "\n sampleRate:" + sampleRate +

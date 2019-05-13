@@ -5,6 +5,7 @@ import java.io.RandomAccessFile;
 
 public class AudioEditUtil {
     public static int WAVE_HEAD_SIZE = 44;
+    public static int MAX_ELEMENT_AUDIO_TIME = 9 * 1000;
 
     /**
      * 裁剪音频
@@ -12,53 +13,45 @@ public class AudioEditUtil {
      * @param audio        音频信息
      * @param cutStartTime 裁剪开始时间
      */
-
     public static void compoundAudio(Audio audio, String elementAudioPath, float cutStartTime) {
 
-        String srcWavePath = audio.getPath();
+        String srcWavePath = audio.getWavPath();
         int sampleRate = audio.getSampleRate();
         int channels = audio.getChannel();
         int bitNum = audio.getBitNum();
-
+        long duration = audio.getDuration();
+        //如果
+        if (cutStartTime + MAX_ELEMENT_AUDIO_TIME > duration)
+            return;
         RandomAccessFile srcFis = null;
         RandomAccessFile newFos = null;
         try {
             //创建输入流
             srcFis = new RandomAccessFile(srcWavePath, "rw");
             newFos = new RandomAccessFile(elementAudioPath, "rw");
-
             //源文件开始读取位置，结束读取文件，读取数据的大小
             final int cutStartPos = getPositionFromWave(cutStartTime, sampleRate, channels, bitNum);
-//            final int cutEndPos = getPositionFromWave(cutEndTime, sampleRate, channels, bitNum);
-//            final int contentSize = cutEndPos - cutStartPos;
-            //复制wav head 字节数据
-//            byte[] headerData = AudioEncodeUtil.getWaveHeader(contentSize, sampleRate, channels, bitNum);
-//            copyHeadData(headerData, newFos);
             //移动到文件开始读取处
-            int current = WAVE_HEAD_SIZE + cutStartPos;
-            srcFis.seek(current);
-//            newFos.seek(44);
+            int currentPos = WAVE_HEAD_SIZE + cutStartPos;
+            srcFis.seek(currentPos);
+            newFos.seek(WAVE_HEAD_SIZE);
             int len;
-            byte[] buffer1 = new byte[FileUtil.CACHE_SIZE];
-            byte[] buffer2 = new byte[FileUtil.CACHE_SIZE];
+            byte[] srcWavBuffer = new byte[FileUtil.CACHE_SIZE];
+            byte[] elementAudioBuffer = new byte[FileUtil.CACHE_SIZE];
             byte[][] bytes = new byte[2][];
-            byte[] buffer3;
-            while ((len = newFos.read(buffer1)) != -1) {
-                srcFis.read(buffer2, 0, len);
-                bytes[0] = buffer1;
-                bytes[1] = buffer2;
-                srcFis.seek(current);
-                buffer3 =mixRawAudioBytes(bytes, len);
-                srcFis.write(buffer3, 0, len);
-                current += len;
+            byte[] cacheBuffer;
+            while ((len = newFos.read(srcWavBuffer)) != -1) {
+                srcFis.read(elementAudioBuffer, 0, len);
+                bytes[0] = srcWavBuffer;
+                bytes[1] = elementAudioBuffer;
+                srcFis.seek(currentPos);
+                cacheBuffer = mixRawAudioBytes(bytes, len);
+                srcFis.write(cacheBuffer, 0, len);
+                currentPos += len;
             }
-
-            //复制裁剪的音频数据
-//            copyData(srcFis, newFos, contentSize);
 
         } catch (Exception e) {
             e.printStackTrace();
-
             return;
 
         } finally {
@@ -78,10 +71,6 @@ public class AudioEditUtil {
                 }
             }
         }
-
-        // 删除源文件
-        //重命名为源文件
-//        FileUtils.renameFile(new File(tempOutPath), audio.getPath());
     }
 
     /**
@@ -95,7 +84,7 @@ public class AudioEditUtil {
      */
     private static int getPositionFromWave(float time, int sampleRate, int channels, int bitNum) {
         int byteNum = bitNum / 8;
-        int position = (int) (time/1000 * sampleRate * channels * byteNum);
+        int position = (int) (time / 1000 * sampleRate * channels * byteNum);
 
         //这里要特别注意，要取整（byteNum * channels）的倍数
         position = position / (byteNum * channels) * (byteNum * channels);
