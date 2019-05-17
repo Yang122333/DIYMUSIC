@@ -18,7 +18,9 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class FilesShowActivity extends Activity {
-    public static final int FILESSHOWACTIVITY_RESULT = 2;
+    public static final int PLAY = 1;
+    public static final int RECORD = 2;
+
     public static String FILE_NAME = "fileName";
     private ListView mlistView;
 
@@ -45,8 +47,18 @@ public class FilesShowActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent();
                 intent.putExtra(FILE_NAME,lists.get(position));
-                setResult(FILESSHOWACTIVITY_RESULT,intent);
+                setResult(PLAY,intent);
                 FilesShowActivity.this.finish();
+            }
+        });
+        mlistView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent();
+                intent.putExtra(FILE_NAME,lists.get(position));
+                setResult(RECORD,intent);
+                FilesShowActivity.this.finish();
+                return true;
             }
         });
     }

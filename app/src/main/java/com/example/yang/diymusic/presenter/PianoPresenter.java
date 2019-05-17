@@ -23,49 +23,64 @@ import rx.schedulers.Schedulers;
 public class PianoPresenter extends BasePresenter<PianoUI> {
     public static final int RECORD = 1;
     public static final int PLAY = 2;
-    public static final int START = 150;
-    private static final int END = 850;
+    public int start = 122;
+    private int end = 878;
     public static final int FULL = 1000;
     public static final double TOPERCENT = 1.0 / FULL;
-    public static final int ONE_RECT = (END - START) / PianoView.WHITE_PIANO_KEY_COUNT;
-    public static final int SCREEN_RECT = ONE_RECT * 8;
-    private static final double RATIO = 1.0 / (FULL - START - (FULL - END)) * FULL;
+    public int one_rect = (end - start) / PianoView.WHITE_PIANO_KEY_COUNT;
+    public int screen_rect = one_rect * 8;
+    private double ratio = 1.0 / (FULL - start - (FULL - end)) * FULL;
     private double seekBarPercent = 0;
     private Context context;
     private Handler handler = new Handler();
     private Timer timer = new Timer();
     private long startTime;
-    private MediaPlayer player = new MediaPlayer();
+    private MediaPlayer player;
 
     public PianoPresenter(Context context) {
         this.context = context;
     }
 
+    public void setBarStart(int number, int offset) {
+        start = offset;
+        end = FULL - offset;
+        screen_rect = one_rect * number;
+    }
+
     public int handleProgress(int progress) {
-        if (progress < START) {
-            return START;
-        } else if (progress > END) {
-            return END;
+        if (progress < start) {
+            return start;
+        } else if (progress > end) {
+            return end;
         } else {
-            seekBarPercent = (progress - START) * RATIO * TOPERCENT;
+            seekBarPercent = (progress - start) * ratio * TOPERCENT;
             return progress;
         }
     }
 
-    public void startRecordOrPlay(int type) {
-        if (type == RECORD) {
+    //开始录音或者播放提示文案
+    public void startRecordOrPlay(boolean isPlay) {
+        if (!isPlay) {
+            if(timer != null){
+                timer.cancel();
+            }
             startRecord();
         } else {
-            stopRecordOrPlay(true);
+            if(timer != null){
+                timer.cancel();
+            }
             startPlay();
         }
     }
 
+    //操作UI显示文案开始录音
     private void startRecord() {
         startTime = System.currentTimeMillis();
+        timer = new Timer();
         timer.schedule(new TimerTask() {
             int time = 0;
             int temp = 0;
+
             @Override
             public void run() {
                 if (temp % 2 == 0) {
@@ -77,10 +92,13 @@ public class PianoPresenter extends BasePresenter<PianoUI> {
         }, 0, 500);
     }
 
+    //操作UI显示文案开始播放
     private void startPlay() {
+        timer = new Timer();
         timer.schedule(new TimerTask() {
             int time = 0;
             int temp = 0;
+
             @Override
             public void run() {
                 if (temp % 2 == 0) {
@@ -92,58 +110,89 @@ public class PianoPresenter extends BasePresenter<PianoUI> {
         }, 0, 500);
     }
 
-    public void stopRecordOrPlay(boolean isPlaying) {
-        timer.cancel();
-        timer = new Timer();
+    //对文案操作
+    public void stopRecordOrPlay(boolean isNeedDialog) {
         getUi().hideHint();
-        if (!isPlaying) {
+        if(timer != null){
+            timer.cancel();
+        }
+        if (isNeedDialog) {
             getUi().showDialog();
-        } else {
-            if (player != null) {
-                player.reset();
-            }
+        }
+        if (player != null) {
+            player.stop();
         }
     }
 
-    public boolean record(String name) {
+    public boolean record(String srcFileName, String armFileName) {
         AudioService audioService = AudioService.getInstance(context);
-        if (FileUtil.checkFileExist(new File(audioService.MUSIC + File.separator + name + ".wav"))) {
+        if (FileUtil.checkFileExist(new File(audioService.MUSIC + File.separator + armFileName + ".wav"))) {
             Toast.makeText(context, "文件已存在", Toast.LENGTH_SHORT).show();
             return false;
         }
         getUi().showLoading();
-        Observable.create(subscriber -> {
-            audioService.produceAudio(name, RecodeModel.getInstance().getList(), startTime);
-            subscriber.onNext(null);
-        })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(o -> {
-                    getUi().dismissLoading();
-                    RecodeModel.getInstance().getList().clear();
-                });
+        if (srcFileName == null) {
+            Observable.create(subscriber -> {
+                audioService.produceAudio(armFileName, RecodeModel.getInstance().getList(), startTime);
+                subscriber.onNext(null);
+            })
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(o -> {
+                        getUi().dismissLoading();
+                        RecodeModel.getInstance().getList().clear();
+                    });
+        } else {
+            Observable.create(subscriber -> {
+                audioService.handleAudio(srcFileName, armFileName, RecodeModel.getInstance().getList(), startTime);
+                subscriber.onNext(null);
+            })
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(o -> {
+                        getUi().dismissLoading();
+                        RecodeModel.getInstance().getList().clear();
+                    });
+        }
         return true;
-
     }
+
 
     public double getSeekBarPercent() {
         return seekBarPercent;
     }
 
-    public void playAudio(String fileName) {
-        if(player != null){
+    public void playAudioAndRecord(String fileName) {
+        if (player != null) {
             player.stop();
         }
-
-        startRecordOrPlay(PLAY);
+        startRecordOrPlay(false);
+        getUi().hideHint();
         try {
+            player = new MediaPlayer();
             player.setDataSource(AudioService.getInstance(context).MUSIC + File.separator + fileName);
             player.prepare();
             player.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        player.setOnCompletionListener(mp -> stopRecordOrPlay(true));
+        player.setOnCompletionListener(mp -> stopRecordOrPlay(false));
+    }
+
+    public void playAudio(String fileName) {
+        if (player != null) {
+            player.stop();
+        }
+        startRecordOrPlay(true);
+        try {
+            player = new MediaPlayer();
+            player.setDataSource(AudioService.getInstance(context).MUSIC + File.separator + fileName);
+            player.prepare();
+            player.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        player.setOnCompletionListener(mp -> stopRecordOrPlay(false));
     }
 
     @Override
@@ -154,4 +203,5 @@ public class PianoPresenter extends BasePresenter<PianoUI> {
             player.release();
         }
     }
+
 }

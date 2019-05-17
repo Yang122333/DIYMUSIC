@@ -7,7 +7,7 @@ import android.media.SoundPool;
 import com.example.yang.diymusic.audio.AudioService;
 
 public class SoundModel {
-    private SoundPool sp;
+    private SoundPool mSoundPool;
     private static int[] musicIds = new int[88];
     /**
      * 白键标识
@@ -17,16 +17,27 @@ public class SoundModel {
      * 黑键标识
      */
     private final static int KEY_BLACK = 1;
-    private SoundModel(){}
+
+    private SoundModel() {
+    }
 
     private SoundModel(Context context) {
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                SoundPool sp = new SoundPool(10, AudioManager.STREAM_MUSIC, 1);
+                AudioService audioService = AudioService.getInstance(context);
+                for (int i = 0; i < musicIds.length; i++) {
+                    musicIds[i] = sp.load(context, audioService.getPianoIds()[i], 1);
+                }
+                mSoundPool = sp;
+            }
+        }.start();
         //第一个参数为同时播放数据流的最大个数，第二数据流类型，第三为声音质量
-        sp = new SoundPool(10, AudioManager.STREAM_MUSIC, 1);
-        AudioService audioService =  AudioService.getInstance(context);
-        for (int i = 0; i < musicIds.length; i++) {
-            musicIds[i] = sp.load(context, audioService.getPianoIds()[i], 1);
-        }
+
     }
+
     private static SoundModel singleton;
 
     public static SoundModel getInstance(Context context) {
@@ -70,7 +81,9 @@ public class SoundModel {
     }
 
     public void play(int type, int index) {
-        sp.play(getId(findId(type, index)), 1, 1, 0, 0, 1);
+        if (mSoundPool != null){
+            mSoundPool.play(getId(findId(type, index)), 1, 1, 0, 0, 1);
+        }
     }
 
     private int getId(int index) {

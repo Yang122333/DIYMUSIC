@@ -2,6 +2,7 @@ package com.example.yang.diymusic.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,7 +18,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.yang.diymusic.PreferenceService;
+import com.example.yang.diymusic.DrawableUtils;
+import com.example.yang.diymusic.model.PreferenceService;
 import com.example.yang.diymusic.R;
 import com.example.yang.diymusic.presenter.PianoPresenter;
 import com.example.yang.diymusic.view.ui.PianoUI;
@@ -62,16 +64,22 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter, PianoUI> imp
     //选择音频文件按钮
     musicFileBtn;
     //进度条百分比
-    private int mProgress;
+    private int mProgress = 122;
     //是否正在播放音频
     private boolean isPlaying = false;
+
+    private boolean isRecording = false;
     //钢琴基础配置
     private PreferenceService pf;
     //按键标签id
     private int defaultId;
 
+    private String srcFileName = null;
+
+
     /**
      * 静态启动方法
+     *
      * @param context 启动此activity的环境
      */
     public static void start(Context context) {
@@ -91,11 +99,31 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter, PianoUI> imp
     private void init() {
         findView();
         seekBar.setMax(PianoPresenter.FULL);
-        Log.i("width", seekBar.getThumb().getMinimumWidth() + "");
-        seekBar.setProgress(PianoPresenter.START);
+        seekBar.setProgress(mPresenter.start);
+        mPianoView.setProgress(mPresenter.getSeekBarPercent());
+        Log.i("width", px2dp(this, seekBar.getThumb().getMinimumWidth()) + "");
 //        配置piano
         pf = new PreferenceService();
         mPianoView.setPf(pf);
+    }
+
+    public static int px2dp(Context context, float pxValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (pxValue / scale + 0.5f);
+    }
+
+    //  页面中按键的个数
+    private void setThumb(int number) {
+        // dp
+        int totalWidth = seekBar.getWidth();
+        //52 个键
+        int thumberWidth = (int) (1.0 * totalWidth / PianoView.WHITE_PIANO_KEY_COUNT * number);
+        Drawable drawable = seekBar.getThumb();
+        Drawable drawable1 = DrawableUtils.zoomDrawable(drawable, thumberWidth, drawable.getMinimumHeight());
+        seekBar.setThumb(drawable1);
+        int offset = (int) (thumberWidth / 2.0 / totalWidth * PianoPresenter.FULL);
+        mPresenter.setBarStart(number, offset);
+        mPianoView.setNumber(number);
     }
 
     /**
@@ -129,7 +157,7 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter, PianoUI> imp
     /**
      * 设置监听
      */
-    private void setListenter(){
+    private void setListenter() {
         seekBar.setOnSeekBarChangeListener(this);
         leftArrowBtn.setOnClickListener(this);
         leftArrowsBtn.setOnClickListener(this);
@@ -142,6 +170,7 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter, PianoUI> imp
         drawerLayout.addDrawerListener(this);
         labelBtn.setOnClickListener(this);
     }
+
     @Override
     public int getLayout() {
         return R.layout.piano_playing_layout;
@@ -162,10 +191,19 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter, PianoUI> imp
 
     /**
      * 录音动作
+     *
      * @param text 正在录音提示文案
      */
     @Override
     public void showRecordHint(String text) {
+        //显示暂停按钮
+        if (recordBtn.getVisibility() == View.VISIBLE) {
+            recordBtn.setVisibility(View.GONE);
+            stopRecordBtn.setVisibility(View.VISIBLE);
+        }
+        if (playingImage.getVisibility() == View.VISIBLE) {
+            playingImage.setVisibility(View.GONE);
+        }
         if (recordingImage.getVisibility() == View.VISIBLE) {
             recordingImage.setVisibility(View.INVISIBLE);
         } else {
@@ -179,6 +217,7 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter, PianoUI> imp
 
     /**
      * 播放动作
+     *
      * @param text 正在播放提示文案
      */
     @Override
@@ -225,12 +264,14 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter, PianoUI> imp
         alertDialog.show();
         Pattern p = Pattern.compile("^[a-z][a-zA-Z0-9]*");
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
-            String text = editText.getText().toString();
-            Matcher matcher = p.matcher(text);
+            String armFileName = editText.getText().toString();
+            Matcher matcher = p.matcher(armFileName);
             if (matcher.matches()) {
-                if (mPresenter.record(text)) {
-                    alertDialog.dismiss();
-                }
+                    isRecording = false;
+                    if (mPresenter.record(srcFileName, armFileName)) {
+                        alertDialog.dismiss();
+                    }
+
             } else {
                 Toast.makeText(PianoPlayActivity.this, "输入文件名不合法！", Toast.LENGTH_SHORT).show();
             }
@@ -247,6 +288,7 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter, PianoUI> imp
         progressHUD = ZProgressHUD.getInstance(this);
         progressHUD.show();
     }
+
     /**
      * 取消正在加载loading
      */
@@ -260,33 +302,36 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter, PianoUI> imp
         switch (v.getId()) {
             case R.id.record: {
                 isPlaying = false;
-                recordBtn.setVisibility(View.GONE);
-                stopRecordBtn.setVisibility(View.VISIBLE);
                 mPianoView.setRecord(true);
-                mPresenter.startRecordOrPlay(PianoPresenter.RECORD);
+                mPresenter.startRecordOrPlay(false);
                 break;
             }
             case R.id.record_stop: {
-                stopRecordBtn.setVisibility(View.GONE);
-                recordBtn.setVisibility(View.VISIBLE);
                 mPianoView.setRecord(false);
-                mPresenter.stopRecordOrPlay(isPlaying);
+                //todo
+                if(isPlaying){
+                    mPresenter.stopRecordOrPlay(isRecording);
+                } else {
+                    mPresenter.stopRecordOrPlay(true);
+                }
+                isPlaying = false;
+                isRecording = false;
                 break;
             }
             case R.id.left_arrows: {
-                seekBar.setProgress(mProgress - PianoPresenter.SCREEN_RECT);
+                seekBar.setProgress(mProgress - mPresenter.screen_rect);
                 break;
             }
             case R.id.left_arrow: {
-                seekBar.setProgress(mProgress - PianoPresenter.ONE_RECT);
+                seekBar.setProgress(mProgress - mPresenter.one_rect);
                 break;
             }
             case R.id.right_arrow: {
-                seekBar.setProgress(mProgress + PianoPresenter.ONE_RECT);
+                seekBar.setProgress(mProgress + mPresenter.one_rect);
                 break;
             }
             case R.id.right_arrows: {
-                seekBar.setProgress(mProgress + PianoPresenter.SCREEN_RECT);
+                seekBar.setProgress(mProgress + mPresenter.screen_rect);
                 break;
             }
             case R.id.action_bar_menu: {
@@ -306,6 +351,7 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter, PianoUI> imp
                 break;
         }
     }
+
     /**
      * 选择按键标签样式
      */
@@ -345,12 +391,20 @@ public class PianoPlayActivity extends BaseActivity<PianoPresenter, PianoUI> imp
         switch (requestCode) {
             case PIANOPLAYACTIVITY_REQUEST: {
                 switch (resultCode) {
-                    case FilesShowActivity.FILESSHOWACTIVITY_RESULT: {
+                    case FilesShowActivity.PLAY: {
                         String fileName = data.getStringExtra(FilesShowActivity.FILE_NAME);
                         mPresenter.playAudio(fileName);
                         isPlaying = true;
                         drawerLayout.closeDrawer(Gravity.RIGHT);
                         break;
+                    }
+                    case FilesShowActivity.RECORD: {
+                        srcFileName = data.getStringExtra(FilesShowActivity.FILE_NAME);
+                        mPresenter.playAudioAndRecord(srcFileName);
+                        isRecording = true;
+                        isPlaying = true;
+                        mPianoView.setRecord(true);
+                        drawerLayout.closeDrawer(Gravity.RIGHT);
                     }
                     default: {
                         break;

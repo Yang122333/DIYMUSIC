@@ -16,7 +16,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.yang.diymusic.LogUtil;
-import com.example.yang.diymusic.PreferenceService;
+import com.example.yang.diymusic.model.PreferenceService;
 import com.example.yang.diymusic.R;
 import com.example.yang.diymusic.model.RecodeModel;
 import com.example.yang.diymusic.model.SoundModel;
@@ -99,18 +99,18 @@ public class PianoView extends View {
     /**
      * 标识1
      */
-    private String[] mTones = { "do", "re", "mi", "fa", "sol", "la", "si" };
+    private String[] mTones = {"do", "re", "mi", "fa", "sol", "la", "si"};
     /**
      * 标识2
      */
-    private String[] mDTones = { "C", "D", "E", "F", "G", "A", "B" };
-    private String[] mNumbers = { "0", "1", "2", "3", "4", "5", "6", "7", "8" };
+    private String[] mDTones = {"C", "D", "E", "F", "G", "A", "B"};
+    private String[] mNumbers = {"0", "1", "2", "3", "4", "5", "6", "7", "8"};
     /**
      * 标识矩形的颜色
      */
-    private int[] mToneColors = { 0xFFCECECE, 0xFFB88886, 0xFFFE7C79,
+    private int[] mToneColors = {0xFFCECECE, 0xFFB88886, 0xFFFE7C79,
             0xFFFEA44A, 0xFFEDED3B, 0xFF24FF24, 0xFF36FFFF, 0xFF63AFFA,
-            0xFFAE6EEF };
+            0xFFAE6EEF};
     /**
      * 白色按键恢复默认
      */
@@ -125,6 +125,7 @@ public class PianoView extends View {
     }
 
     private boolean isRecorde = false;
+
     public PianoView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setupView(context);
@@ -156,7 +157,7 @@ public class PianoView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         mWhiteNum = pf.getKeyNumber();
         mSurfaceWidth = w - 2;
-        Log.i("yang", ""+(getWidth() - mSurfaceWidth - 2));
+        Log.i("yang", "" + (getWidth() - mSurfaceWidth - 2));
         if (mWhiteNum == 9 || mWhiteNum > 10 && mWhiteNum < 14) {
             mSurfaceWidth = w - mWhiteNum;
         }
@@ -275,6 +276,7 @@ public class PianoView extends View {
             oval.offset(mWhiteRect.width(), 0);
         }
     }
+
     //获取滑动的距离
     private int calculateOffset() {
         if (WHITE_PIANO_KEY_COUNT == mWhiteNum) {
@@ -297,6 +299,7 @@ public class PianoView extends View {
         mProgress = progress;
         invalidate();
     }
+
     //设置按键显示的数量
     public void setNumber(int i) {
         mWhiteNum = i;
@@ -324,6 +327,7 @@ public class PianoView extends View {
     }
 
     int touch_x, touch_y, move_x, touch_x1;
+
     //多点触控
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -401,7 +405,9 @@ public class PianoView extends View {
 
         return true;
     }
-SoundModel soundModel = SoundModel.getInstance(getContext());
+
+    SoundModel soundModel = SoundModel.getInstance(getContext());
+
     // 手指滑动点击事件
     private void keyOnclick(int x, int y) {
         //获取黑色点击按键的位置
@@ -414,10 +420,10 @@ SoundModel soundModel = SoundModel.getInstance(getContext());
                 //播放白色按键音乐
                 soundModel.play(KEY_WHITE, index);
                 //保存白色按键位置
-                if(isRecorde){
+                if (isRecorde) {
                     RecodeModel.getInstance().addEvent(KEY_WHITE, index);
                 }
-                LogUtil.i("白色"+index);
+                LogUtil.i("白色" + index);
                 invalidate();
             } else {
                 return;
@@ -428,13 +434,14 @@ SoundModel soundModel = SoundModel.getInstance(getContext());
             //播放黑色按键音乐
             soundModel.play(KEY_BLACK, index);
             //保存黑色按键位置
-            if(isRecorde){
+            if (isRecorde) {
                 RecodeModel.getInstance().addEvent(KEY_BLACK, index);
             }
-            LogUtil.i("黑色"+index);
+            LogUtil.i("黑色" + index);
             invalidate();
         }
     }
+
     //获取黑色点击按键的位置
     private int indexOfAtBlackKeys(int x, int y) {
         mBlackRect.offsetTo(calculateOffset(), 0);
@@ -457,6 +464,7 @@ SoundModel soundModel = SoundModel.getInstance(getContext());
         }
         return -1;
     }
+
     //获取白色点击按键的位置
     private int indexOfAtWhiteKeys(int x, int y) {
         mWhiteRect.offsetTo(calculateOffset(), 0);
@@ -472,13 +480,15 @@ SoundModel soundModel = SoundModel.getInstance(getContext());
         }
         return -1;
     }
+
     //恢复按键默认状态
     public void Recover() {
         wIndex = -1;
         bIndex = -1;
         invalidate();
     }
-    public void setPf(PreferenceService pf){
+
+    public void setPf(PreferenceService pf) {
         this.pf = pf;
         invalidate();
     }

@@ -43,7 +43,7 @@
                 android:layout_margin="@dimen/record_margin"
                 android:layout_gravity="center_vertical"
                 android:src="@drawable/actionbar_record"
-                android:visibility="invisible" />
+                android:visibility="gone" />
             <ImageView
                 android:id="@+id/playing"
                 android:layout_width="@dimen/recording_size"
@@ -90,6 +90,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:orientation="horizontal">
 
             <ImageView
@@ -102,18 +103,27 @@
                 android:id="@+id/left_arrow"
                 android:layout_width="@dimen/arrow_size"
                 android:layout_height="@dimen/arrow_size"
-                android:src="@drawable/l_arrow_0" />
-
+                android:src="@drawable/l_arrow_0"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:src="@drawable/seekbar_left"/>
             <SeekBar
                 android:id="@+id/overview"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="45dp"
                 android:layout_weight="1"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
                 android:focusable="true"
-                android:progressDrawable="@drawable/seekbar_bg"
+                android:progressDrawable="@drawable/seekbar_center"
+                android:scaleType="fitXY"
                 android:splitTrack="false"
                 android:thumb="@drawable/seekbar_thumb" />
-
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:src="@drawable/seekbar_right"/>
             <ImageView
                 android:id="@+id/right_arrow"
                 android:layout_width="@dimen/arrow_size"

@@ -7,6 +7,7 @@ import com.example.yang.diymusic.LogUtil;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -141,5 +142,28 @@ public class FileUtil {
             }
         }
         return null;
+    }
+    public static void copyFile(String srcPath, String armPath) {
+        if (checkFileExist(new File(armPath))) {
+            return;
+        }
+        FileInputStream fis;
+        FileOutputStream fos;
+        byte[] buffer = new byte[CACHE_SIZE];
+        int len;
+        try {
+            fis = new FileInputStream(srcPath);
+            fos = new FileOutputStream(armPath);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            while ((len = bis.read(buffer)) != -1) {
+                bos.write(buffer, 0, len);
+            }
+            fis.close();
+            fos.close();
+        } catch (IOException e) {
+            LogUtil.e("文件读取失败");
+            e.printStackTrace();
+        }
     }
 }

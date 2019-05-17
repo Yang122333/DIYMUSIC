@@ -1,4 +1,4 @@
-package com.example.yang.diymusic;
+package com.example.yang.diymusic.model;
 
 public class PreferenceService {
     public static final String DO = "Do";
@@ -9,7 +9,7 @@ public class PreferenceService {
     private int mKeyNumber;
     public PreferenceService() {
         mKeyNumber = 8;
-        mTone = DO;
+        mTone = D4;
         mMode = 1;
     }
     public void setKeyNumber(int keyNumber){
@@ -25,14 +25,7 @@ public class PreferenceService {
         return mMode;
     }
     public void setTone(String tone){
-        if(tone == null)
-            return;
-        if(tone.equals(DO)){
-            mTone = DO;
-        }
-        if(tone.equals(D4)){
-            mTone = D4;
-        }
+      mTone = tone;
     }
     public String getTone() {
         return mTone;

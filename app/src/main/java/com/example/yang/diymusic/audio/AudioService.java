@@ -60,7 +60,7 @@ public class AudioService {
         mAudio.setSampleRate(44100);
         //duration 为最后一个按键时间减去第一个按键时间然后加上10s 因为音频最长时间为9s
         long duration = informations.get(informations.size() - 1).getPressTime()
-                - informations.get(0).getPressTime() + 10 * 1000;
+                - startTime + 10 * 1000;
         mAudio.setDuration(duration);
         mAudio.setPcmPath(EMPTY_AUDIO_PATH + File.separator + musicName + "temp" + ".pcm");
         mAudio.setWavPath(MUSIC + File.separator + musicName + ".wav");
@@ -68,6 +68,20 @@ public class AudioService {
         compoundAudio(mAudio, informations, startTime);
     }
 
+    public void handleAudio(String srcMusicName ,String armMusicName, List<PressInformation> informations, long startTime){
+        initElementAudio();
+        srcMusicName = MUSIC + File.separator + srcMusicName ;
+        armMusicName = MUSIC + File.separator + armMusicName + ".wav";
+
+        FileUtil.copyFile(srcMusicName,armMusicName);
+        try {
+            Audio mAudio = Audio.createAudioFromFile(new File(armMusicName));
+            compoundAudio(mAudio, informations, startTime);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
     private void initElementAudio() {
         for (int i = 0; i < PIANO_AUDIO_NUMBER; i++) {
             int index = i + 1;
